@@ -5,6 +5,8 @@ import json
 class wordsearch():
     wordlist = []
     ignoreword = []
+    oldignoreword = []
+    remeberword = []
     def __init__(self):
         print("hello")
         pass
@@ -23,8 +25,16 @@ class wordsearch():
         with open("wordlist.txt", "r") as json_file:
             self.wordlist = json.load(json_file)
         pass
+    def loadignoreList(self):
+        f = open("ignore.txt", 'r')
+        ignorelist = f.read().split('\n')
+        for ig in ignorelist:
+            self.oldignoreword.append(ig)
+        pass
+
     def process_srt(self):
         self.loadWordlist()
+        self.loadignoreList()
         f = open("p1.srt", 'r')
         srt = f.readlines()
         found = 0
@@ -34,17 +44,24 @@ class wordsearch():
                 for sp in splited:
                     for w in self.wordlist:
                         if sp == w[1] or sp == w[4] or sp == w[5]:
+                            if sp in self.oldignoreword:
+                                continue
                             found = 1
+                            self.remeberword.append({w[1],w[2]})
+                            self.ignoreword.append(w[1])
                             break
                     if found == 1:
                         print("_____", end=' ')
-                        self.ignoreword.append(sp)
+
                         found = 0
                     else:
                         print(sp, end=' ')
         print("remember list: ", self.ignoreword)
+        self.ignoreword = self.ignoreword + self.oldignoreword
         with open("ignore.txt", 'w') as outfile:
-            json.dump(self.ignoreword, outfile)
+            for ig in self.ignoreword:
+                outfile.writelines(ig+"\n")
+            outfile.close()
 
 
 
